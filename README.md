@@ -1,56 +1,59 @@
 # shadowblade.space
 
-Strona obsługuje HTTP/3 przez QUIC v2 i v1, z TLS 1.3. Nagłówek
-`Alt-Svc` reklamuje HTTP/3 na UDP/443. HTTP/2 i HTTP/1.1 są dostępne
-dla klientów, którzy nie mogą korzystać z QUIC. Biblioteka quic-go: v0.63.0.
+The website supports HTTP/3 over QUIC v2 and v1 with TLS 1.3. The
+`Alt-Svc` header advertises HTTP/3 on UDP port 443. HTTP/2 and HTTP/1.1
+are available for clients that cannot use QUIC. quic-go version: v0.63.0.
 
-## Licznik wejść
+## Visit counter
 
-Plik `/root/site/poeple.log` zawiera tylko adres IP i czas UTC (RFC3339),
-oddzielone spacją. Jest dopisywany po udanych żądaniach `GET /`, również
-z parametrami zapytania i przy odpowiedzi 304. Wejścia na `/index.html`
-są przekierowywane na `/` i liczone po przekierowaniu. Zasoby, HEAD,
-błędy, odrzucone żądania i subdomeny nie są zapisywane.
+The `/root/site/poeple.log` file contains only the IP address and a UTC
+timestamp (RFC3339), separated by a space. An entry is appended after each
+successful `GET /` request, including requests with query parameters and
+304 responses. Requests to `/index.html` are redirected to `/` and counted
+after the redirect. Requests for assets, HEAD requests, errors, rejected
+requests, and requests to subdomains are not logged.
 
-To liczba wejść obsłużonych przez serwer, nie unikalnych osób. Odświeżenia
-i boty pobierające stronę główną również są liczone.
+This counts visits served by the server, not unique visitors. Page refreshes
+and bots fetching the home page are also counted.
 
-Liczba wejść:
+To display the visit count:
 
 ```sh
 wc -l < /root/site/poeple.log
 ```
 
-Log ma uprawnienia 0600 i właściciela 10001:10001 (użytkownik kontenera).
-Jest montowany jako osobny plik poza katalogiem publicznym i zachowuje
-zawartość po odtworzeniu kontenera. IP pochodzi z połączenia; nagłówki
-`X-Forwarded-For` i `X-Real-IP` nie mogą go nadpisać. Docker wymaga,
-aby plik istniał przed uruchomieniem usługi.
+The log has permissions `0600` and is owned by `10001:10001` (the container
+user and group). It is mounted as a separate file outside the public
+directory and retains its contents when the container is recreated. The
+IP address comes from the connection; the `X-Forwarded-For` and `X-Real-IP`
+headers cannot override it. Docker requires the file to exist before the
+service starts.
 
-## Ograniczanie obciążenia
+## Rate limiting and resource usage
 
-Limity dotyczą wyłącznie strony statycznej, łącznie dla wszystkich wersji HTTP:
+The limits apply only to the static website and are shared across all HTTP versions:
 
-- Strona główna: 1 żądanie/s na IP, zapas 5 żądań.
-- Wszystkie ścieżki: 5 żądań/s na IP, zapas 30 żądań.
-- Łącznie: 200 żądań/s, zapas 400 żądań.
-- Przekroczenie limitu: HTTP 429 z `Retry-After: 1`.
-- IPv6: wspólny limit dla /64; w logu pozostaje pełny adres.
-- Rejestr limitów: najwyżej 10 000 wpisów, usuwanie nieaktywnych po 5 minutach.
+- Home page: 1 request/s per IP, with a burst allowance of 5 requests.
+- All paths: 5 requests/s per IP, with a burst allowance of 30 requests.
+- Global: 200 requests/s, with a burst allowance of 400 requests.
+- Exceeded limits: HTTP 429 with `Retry-After: 1`.
+- IPv6: a shared limit per /64 subnet; the full address is retained in the log.
+- Rate limiter registry: up to 10,000 entries, with inactive entries removed after 5 minutes.
 
-HTML i zasoby są wczytywane do pamięci i kompresowane gzip raz przy starcie.
-Zasoby mają cache na 24 godziny; HTML wymaga ponownego sprawdzenia ETag,
-aby aktualizacje strony i licznik działały przy kolejnych żądaniach.
-Lista publicznych plików obejmuje wyłącznie HTML i katalog assets.
+HTML and assets are loaded into memory and gzip-compressed once at startup.
+Assets are cached for 24 hours; HTML requires ETag revalidation so that page
+updates and visit counting work on subsequent requests. Only the HTML and
+the `assets` directory are included in the list of public files.
 
-QUIC dopuszcza 64 równoległe strumienie żądań na połączenie. Przy napływie
-nowych połączeń przekraczającym 20/s (zapas 40) włącza weryfikację adresu
-przez Retry. Limity aplikacyjne nie chronią przed zapełnieniem łącza;
-ochrona przed takim atakiem wymaga filtrowania u dostawcy sieci.
+QUIC allows 64 concurrent request streams per connection. When incoming
+connections exceed 20/s (with a burst allowance of 40), it enables address
+validation using Retry. Application-level limits do not protect against
+network link saturation; protection against such attacks requires filtering
+by the network provider.
 
-## Budowanie i testy
+## Building and testing
 
-Wymagane Go 1.26 lub nowsze. Docker buduje przy użyciu Go 1.26.8.
+Go 1.26 or later is required. The Docker build uses Go 1.26.8.
 
 ```sh
 go test -race ./...
@@ -58,3 +61,20 @@ docker compose build shadowblade
 docker compose up -d --no-deps shadowblade
 curl --http3-only -I https://shadowblade.space/
 ```
+
+## Copyright and license
+
+Copyright (c) 2026 shadow-alpha01. **All rights reserved.**
+
+This project is proprietary. No license is granted to copy, reproduce,
+modify, create derivative works from, distribute, publish, sublicense,
+sell, or otherwise use the original project materials without the copyright
+holder's prior written permission. These restrictions apply to both
+commercial and noncommercial use, in whole or in part. See [LICENSE](LICENSE)
+for the full terms and applicable exceptions.
+
+Third-party materials retain their own licenses. The bundled IBM Plex Mono
+and Space Grotesk fonts are licensed under the SIL Open Font License 1.1;
+see [IBM Plex Mono's license](assets/ibm-plex-mono-OFL.txt) and
+[Space Grotesk's license](assets/space-grotesk-OFL.txt). External dependencies
+remain subject to their respective licenses.
