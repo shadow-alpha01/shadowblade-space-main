@@ -1,0 +1,54 @@
+services:
+  shadowblade:
+    build: .
+    image: shadowblade:latest
+    container_name: shadowblade
+    restart: unless-stopped
+
+    ports:
+      - "443:8443/tcp"
+      - "443:8443/udp"
+      - "80:8080/tcp"
+
+    environment:
+      ADDR: ":8443"
+      ALT_SVC_PORT: "443"
+      WEBROOT: "/srv/www"
+      VISIT_LOG: "/var/log/site/poeple.log"
+      # Every hostname served from this machine must be listed: only this server
+      # owns :80/:443, so only it can answer an ACME challenge. The n8n stack
+      # also copies its certificate out of ./acme (/root/n8n/sync-cert.sh).
+      ACME_DOMAIN: "shadowblade.space,n8n.shadowblade.space,c2.shadowblade.space,bloodhound.shadowblade.space"
+      # Hostnames routed to another backend instead of the static site. Puts n8n
+      # on standard :443 so it works from networks that only allow 80/443.
+      PROXY_MAP: "n8n.shadowblade.space=http://n8n:5678,c2.shadowblade.space=http://cloudc2:8080,bloodhound.shadowblade.space=http://bloodhound:8080"
+      ACME_EMAIL: "przem@shadowblade.space"
+      ACME_HTTP_ADDR: ":8080"
+      ACME_CACHE_DIR: "/acme"
+
+    volumes:
+      - ./acme:/acme
+      - type: bind
+        source: ./poeple.log
+        target: /var/log/site/poeple.log
+        bind:
+          create_host_path: false
+
+    networks:
+      - default
+      - n8n          # reach the n8n container by name for PROXY_MAP
+      - bloodhound   # reach BloodHound over its dedicated proxy network
+
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+
+networks:
+  default:
+  n8n:
+    external: true
+    name: ipi-n8n_web
+  bloodhound:
+    external: true
+    name: bloodhound_web

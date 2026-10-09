@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en" data-motion="off">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#070b09">
+  <meta name="description" content="shadowblade.space — Stay curious. Move in silence.">
+  <title>shadowblade.space</title>
+  <link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+  <link rel="preload" href="/assets/space-grotesk-600.ttf" as="font" type="font/ttf" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'Space Grotesk';
+      src: url('/assets/space-grotesk-600.ttf') format('truetype');
+      font-style: normal;
+      font-weight: 600;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'IBM Plex Mono';
+      src: url('/assets/ibm-plex-mono-400.ttf') format('truetype');
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+    }
+    :root {
+      color-scheme: dark;
+      --bg: #070b09;
+      --ink: #e5ede7;
+      --muted: #91a599;
+      --green: #85f4b5;
+      --line: rgba(152, 198, 171, .16);
+      --mono: 'IBM Plex Mono', ui-monospace, monospace;
+      --edge: clamp(24px, 6.5vw, 112px);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { background: var(--bg); }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: var(--mono);
+      -webkit-font-smoothing: antialiased;
+      background: radial-gradient(ellipse at 82% 35%, #10261b 0%, transparent 52%), var(--bg);
+    }
+    ::selection { background: var(--green); color: var(--bg); }
+    a { color: inherit; }
+    button { font: inherit; }
+    a:focus-visible, button:focus-visible { outline: 2px solid var(--green); outline-offset: 8px; }
+    #matrix, .texture { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    #matrix { opacity: .16; }
+    .texture {
+      background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(0, 0, 0, .13) 3px 4px);
+      opacity: .5;
+    }
+    .page {
+      position: relative;
+      isolation: isolate;
+      width: 100%;
+      max-width: 1800px;
+      min-height: 100vh;
+      min-height: 100svh;
+      margin-inline: auto;
+      padding-inline: var(--edge);
+      display: flex;
+      flex-direction: column;
+      overflow: clip;
+    }
+    .masthead {
+      min-height: 108px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+    .wordmark { display: inline-flex; align-items: center; gap: 16px; text-decoration: none; }
+    .mark { width: 28px; height: 36px; color: var(--green); }
+    .wordmark span { font-size: 11px; letter-spacing: .18em; }
+    main { position: relative; flex: 1; display: flex; align-items: center; padding-block: 90px 100px; }
+    .sigil { position: absolute; z-index: -1; width: min(43vw, 600px); right: -30px; top: 50%; transform: translateY(-55%); opacity: .28; pointer-events: none; }
+    .sigil .outer-ring { transform-origin: 250px 250px; }
+    [data-motion="on"] .outer-ring { animation: orbit 100s linear infinite; }
+    @keyframes orbit { to { transform: rotate(360deg); } }
+    .hero { width: 100%; }
+    .prompt { display: flex; flex-wrap: wrap; align-items: center; column-gap: 9px; font-size: 12px; line-height: 1.8; color: var(--muted); }
+    .prompt-user { color: var(--green); }
+    .command { color: #bac8bf; }
+    .cursor { display: inline-block; width: 7px; height: 13px; margin-left: 4px; vertical-align: -2px; background: var(--green); opacity: .8; }
+    [data-motion="on"] .cursor { animation: blink 1.3s step-end infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+    h1 {
+      position: relative;
+      margin: 25px 0 28px;
+      font-family: 'Space Grotesk', Arial, sans-serif;
+      font-size: clamp(46px, 8.35vw, 146px);
+      font-weight: 600;
+      line-height: 1.04;
+      letter-spacing: -.075em;
+      white-space: nowrap;
+      text-shadow: 0 0 3px #e5ede733, 0 0 22px #85f4b51f, 0 0 50px #85f4b50d;
+    }
+    h1 .domain {
+      --neon-glow: 0 0 3px #85f4b56b, 0 0 18px #85f4b54d, 0 0 40px #85f4b529, 0 0 72px #85f4b514;
+      --neon-dim: 0 0 2px #85f4b538, 0 0 12px #85f4b526, 0 0 30px #85f4b514, 0 0 60px #85f4b50a;
+      color: var(--green);
+      text-shadow: var(--neon-glow);
+    }
+    [data-motion="on"] h1 .domain { animation: neon-flicker 12s linear infinite; }
+    @keyframes neon-flicker {
+      0%, 31%, 35%, 68%, 72%, 100% { opacity: 1; text-shadow: var(--neon-glow); }
+      32%, 69% { opacity: .8; text-shadow: var(--neon-dim); }
+      33%, 70% { opacity: .97; text-shadow: var(--neon-glow); }
+      34% { opacity: .88; text-shadow: var(--neon-dim); }
+    }
+    .tagline { margin: 0; color: #a6b8ad; font-size: clamp(13px, 1.15vw, 16px); line-height: 1.8; letter-spacing: -.035em; }
+    .tagline span { color: var(--ink); }
+    .contact { width: fit-content; margin-top: 52px; padding-top: 23px; border-top: 1px solid var(--line); }
+    .contact-label { display: block; margin: 0 0 12px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .contact-link { display: inline-flex; align-items: center; gap: 26px; text-decoration: none; font-size: 14px; line-height: 1.7; transition: color .2s; }
+    .contact-link svg { width: 18px; height: 18px; color: var(--green); transition: transform .2s; }
+    .contact-link:hover { color: var(--green); }
+    .contact-link:hover svg { transform: translate(3px, -3px); }
+    .footer { min-height: 80px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 9px; line-height: 1.8; letter-spacing: .1em; }
+    .footer p { margin: 0; }
+    .footer-motto { color: #90aa9a; }
+    .motion { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 8px; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+    .motion:hover { color: var(--green); }
+    .motion-icon { width: 7px; height: 9px; border-left: 2px solid currentColor; border-right: 2px solid currentColor; }
+    [data-motion="off"] .motion-icon { width: 0; height: 0; border: 5px solid transparent; border-right: 0; border-left: 7px solid currentColor; }
+    [hidden] { display: none !important; }
+    .reveal { animation: appear .85s both; }
+    @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @media (min-width: 1800px) { h1 { font-size: 146px; } }
+    @media (max-width: 900px) {
+      .masthead { min-height: 88px; }
+      .wordmark span { font-size: 10px; }
+      .footer-motto { display: none; }
+    }
+    @media (max-width: 600px) {
+      .masthead { min-height: 80px; }
+      .wordmark { gap: 11px; }
+      .wordmark span { font-size: 9px; letter-spacing: .1em; }
+      main { padding-block: 72px 86px; }
+      .prompt { font-size: 10px; column-gap: 7px; }
+      h1 { margin-block: 25px 25px; font-size: clamp(40px, 11.5vw, 69px); letter-spacing: -.07em; line-height: 1.12; }
+      h1 .domain { display: block; }
+      .tagline { max-width: 270px; font-size: 12px; letter-spacing: -.02em; }
+      .tagline span { display: block; }
+      .contact { margin-top: 38px; padding-top: 21px; }
+      .contact-link { font-size: 12px; gap: 21px; }
+      .contact-label { font-size: 11px; }
+      .sigil { width: 340px; max-width: 90vw; top: 38%; right: -120px; opacity: .19; }
+      .footer { min-height: 72px; gap: 12px; font-size: 8px; letter-spacing: .03em; }
+    }
+    @media (max-height: 700px) and (min-width: 601px) {
+      .masthead { min-height: 76px; }
+      main { padding-block: 58px 68px; }
+      .contact { margin-top: 30px; }
+      .footer { min-height: 66px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrix" aria-hidden="true"></canvas>
+  <div class="texture" aria-hidden="true"></div>
+  <div class="page">
+    <header class="masthead">
+      <a class="wordmark" href="/" aria-label="shadowblade.space home">
+        <svg class="mark" viewBox="0 0 36 48" fill="none" aria-hidden="true"><path d="M29 3 7 27h13L7 45l22-25H16L29 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        <span>SHADOWBLADE / SPACE</span>
+      </a>
+    </header>
+    <main id="main">
+      <svg class="sigil" viewBox="0 0 500 500" fill="none" aria-hidden="true">
+        <g stroke="#85f4b5" stroke-width=".6">
+          <g class="outer-ring" opacity=".5"><circle cx="250" cy="250" r="218" stroke-dasharray="2 12"/><path d="M250 20v24m0 412v24M20 250h24m412 0h24"/></g>
+          <circle cx="250" cy="250" r="183" opacity=".3"/>
+          <path d="m96 96 308 308M96 404 404 96" opacity=".15"/>
+          <path d="m310 80-151 190h99L178 420l161-202H232L310 80Z" fill="#85f4b5" fill-opacity=".035" stroke-width="1.2"/>
+          <path d="m310 80-78 138 26 52-80 150m-19-150 73-52m26 52 81-52" opacity=".55"/>
+          <path d="M72 185v-28h28m300 186h28v-28" opacity=".6"/>
+        </g>
+        <g fill="#85f4b5"><circle cx="250" cy="67" r="2"/><circle cx="250" cy="433" r="2"/></g>
+      </svg>
+      <section class="hero reveal" aria-labelledby="site-title">
+        <div class="prompt" aria-hidden="true"><span class="prompt-user">root@shadowblade</span><span>:~</span><span class="command">$ ./enter<span class="cursor"></span></span></div>
+        <h1 id="site-title">shadowblade<span class="domain">.space</span></h1>
+        <p class="tagline"><span>Stay curious.</span> Move in silence.</p>
+        <div class="contact">
+          <p class="contact-label">Contact Us:</p>
+          <a class="contact-link" href="mailto:contact@shadowblade.space">
+            <span>contact@shadowblade.space</span>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14" stroke="currentColor" stroke-width="1.4"/></svg>
+          </a>
+        </div>
+      </section>
+    </main>
+    <footer class="footer">
+      <p>© <span id="year">2026</span> SHADOWBLADE</p>
+      <p class="footer-motto">LESS NOISE. MORE SIGNAL.</p>
+      <button class="motion" id="motion" type="button" aria-label="Pause background animation" aria-pressed="false" hidden>
+        <span class="motion-icon" aria-hidden="true"></span>
+      </button>
+    </footer>
+  </div>
+  <script>
+    (() => {
+      'use strict';
+      document.getElementById('year').textContent = new Date().getFullYear();
+      const canvas = document.getElementById('matrix');
+      const context = canvas.getContext('2d');
+      if (!context) return;
+      const toggle = document.getElementById('motion');
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const alphabet = '01アイウエオカキクケコサシスセソ{}[]/';
+      let storedPreference;
+      try { storedPreference = localStorage.getItem('shadowblade-motion'); } catch (_) { /* Storage is optional. */ }
+      let playing = !reducedMotion.matches && storedPreference !== 'off';
+      let width = 0, height = 0, columns = [], frame = 0, lastFrame = 0;
+      const randomGlyph = () => alphabet[Math.floor(Math.random() * alphabet.length)];
+      function resize() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        const scale = Math.min(window.devicePixelRatio || 1, 1.5);
+        canvas.width = Math.round(width * scale);
+        canvas.height = Math.round(height * scale);
+        context.setTransform(scale, 0, 0, scale, 0, 0);
+        context.font = '12px monospace';
+        columns = Array.from({ length: Math.ceil(width / 30) }, (_, index) => ({
+          x: index * 30,
+          y: Math.random() * (height + 300),
+          speed: .7 + Math.random() * .8,
+          glyphs: Array.from({ length: 8 + Math.floor(Math.random() * 16) }, randomGlyph)
+        }));
+        paint(false);
+      }
+      function paint(advance) {
+        context.clearRect(0, 0, width, height);
+        for (const column of columns) {
+          const strength = .2 + .8 * Math.pow(column.x / width, 2);
+          column.glyphs.forEach((glyph, index) => {
+            const y = column.y - index * 19;
+            if (y < -20 || y > height + 20) return;
+            const alpha = (1 - index / column.glyphs.length) * strength;
+            context.fillStyle = index === 0 ? `rgba(166,244,194,${alpha * .9})` : `rgba(92,188,128,${alpha * .65})`;
+            context.fillText(glyph, column.x, y);
+          });
+          if (advance) {
+            column.y += column.speed * 6;
+            if (column.y - column.glyphs.length * 19 > height) column.y = -20;
+            if (Math.random() > .92) column.glyphs[Math.floor(Math.random() * column.glyphs.length)] = randomGlyph();
+          }
+        }
+      }
+      function animate(time) {
+        if (time - lastFrame > 85) { paint(true); lastFrame = time; }
+        frame = requestAnimationFrame(animate);
+      }
+      function syncMotion() {
+        cancelAnimationFrame(frame);
+        document.documentElement.dataset.motion = playing ? 'on' : 'off';
+        toggle.setAttribute('aria-label', playing ? 'Pause background animation' : 'Play background animation');
+        toggle.setAttribute('aria-pressed', String(!playing));
+        if (playing && !document.hidden) frame = requestAnimationFrame(animate);
+      }
+      toggle.hidden = false;
+      toggle.addEventListener('click', () => {
+        playing = !playing;
+        try { localStorage.setItem('shadowblade-motion', playing ? 'on' : 'off'); } catch (_) { /* Storage is optional. */ }
+        syncMotion();
+      });
+      reducedMotion.addEventListener('change', event => { playing = !event.matches; syncMotion(); });
+      document.addEventListener('visibilitychange', syncMotion);
+      window.addEventListener('resize', resize, { passive: true });
+      resize();
+      syncMotion();
+    })();
+  </script>
+</body>
+</html>
